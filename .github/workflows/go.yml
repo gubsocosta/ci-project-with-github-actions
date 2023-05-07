@@ -11,23 +11,26 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: Test on go ${{ matrix.go_versions }} and  ${{ matrix.os_versions }}
+    runs-on: ${{ matrix.os_versions }}
+    strategy:
+        matrix:
+            go_versions: ['1.18', '1.17']
+            os_versions: ['ubuntu-latest']
     steps:
     - uses: actions/checkout@v3
-
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
-        go-version: 1.18
-        
+        go-version: ${{ matrix.go_versions }}       
     - name: Build database image
       run: docker compose build
-      
     - name: Create database container
       run: docker compose up -d
-      
     - name: Test app
       run: go test -v main_test.go
+    - name: Print the test environment
+      run: echo "${{ secrets.TEST }}"
     
   build:
     needs: test
